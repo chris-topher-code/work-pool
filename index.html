@@ -5,288 +5,1112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskSite - Connect & Collaborate</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #e2e8f0;
-            min-height: 100vh;
-            line-height: 1.6;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    :root {
+        --bg-primary: #09090b;
+        --bg-secondary: #18181b;
+        --bg-tertiary: #27272a;
+        --bg-elevated: #3f3f46;
+        --border: #27272a;
+        --border-light: #3f3f46;
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --accent: #8b5cf6;
+        --accent-hover: #a78bfa;
+        --accent-secondary: #f97316;
+        --success: #22c55e;
+        --error: #ef4444;
+        --warning: #eab308;
+        --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html { scroll-behavior: smooth; }
+    
+    body {
+        font-family: var(--font);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: 
+            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.15), transparent),
+            radial-gradient(ellipse 60% 40% at 100% 100%, rgba(249, 115, 22, 0.1), transparent);
+        pointer-events: none;
+        z-index: -1;
+    }
+    
+    nav {
+        background: rgba(9, 9, 11, 0.8);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    nav .brand {
+        font-size: 1.25rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-right: 2rem;
+        letter-spacing: -0.02em;
+    }
+    
+    nav button {
+        background: transparent;
+        color: var(--text-secondary);
+        border: none;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    nav button:hover {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    
+    nav button.active {
+        background: var(--bg-secondary);
+        color: var(--accent);
+    }
+    
+    nav .spacer { flex: 1; }
+    
+    nav .notification-btn {
+        position: relative;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+    
+    nav .notification-btn:hover { background: var(--bg-secondary); }
+    
+    nav .notification-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: var(--error);
+        color: var(--text-primary);
+        font-size: 0.625rem;
+        font-weight: 600;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+    }
+    
+    nav .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    nav .user-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+    }
+    
+    nav .lang-toggle {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    nav .lang-toggle:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+    
+    main {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .page {
+        display: none;
+        animation: fadeIn 0.4s ease;
+    }
+    
+    .page.active { display: block; }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s;
+    }
+    
+    .card:hover {
+        border-color: var(--border-light);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+    
+    h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    p {
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 10px;
+        border: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #7c3aed);
+        color: var(--text-primary);
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+    }
+    
+    .btn-primary:active { transform: translateY(0); }
+    
+    .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--bg-elevated);
+        border-color: var(--border-light);
+    }
+    
+    .btn-ghost {
+        background: transparent;
+        color: var(--text-secondary);
+    }
+    
+    .btn-ghost:hover {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+    
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+    
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 0.9375rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        padding-right: 2.5rem;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        cursor: pointer;
+    }
+
+    select.form-control option {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-open { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    .badge-progress { background: rgba(249, 115, 22, 0.15); color: var(--warning); }
+    .badge-done { background: rgba(139, 92, 246, 0.15); color: var(--accent); }
+    .badge-single { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .badge-team { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+    
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        padding: 1rem;
+    }
+    
+    .modal-overlay.active { display: flex; }
+    
+    .modal {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 100%;
+        animation: modalIn 0.3s ease;
+    }
+    
+    @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    .modal h2 {
+        margin-bottom: 1.5rem;
+    }
+    
+    .toast-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 300;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .toast {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        animation: toastIn 0.3s ease;
+        max-width: 350px;
+    }
+    
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.error { border-left: 3px solid var(--error); }
+    .toast.info { border-left: 3px solid var(--accent); }
+    
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .loading {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+    }
+    
+    .loading.visible { display: block; }
+    
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1rem;
+    }
+    
+    .project-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+    
+    .project-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+    }
+    
+    .project-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    .project-card-header h3 {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.4;
+    }
+    
+    .project-desc {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    .project-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    
+    .project-card-footer .badge {
+        font-size: 0.75rem;
+    }
+    
+    .budget {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--accent-secondary);
+    }
+    
+    .project-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border);
+    }
+    
+    .tabs {
+        display: flex;
+        gap: 0.25rem;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 0.25rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .tab {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .tab:hover { color: var(--text-secondary); }
+    
+    .tab.active {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+    
+    .user-info {
+        display: none;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .user-info.visible { display: flex; }
+    
+    .role-badge {
+        background: rgba(249, 115, 22, 0.15);
+        color: var(--accent-secondary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        border: 1px solid rgba(249, 115, 22, 0.3);
+        transition: all 0.2s;
+    }
+    
+    .role-badge:hover { background: rgba(249, 115, 22, 0.2); }
+    
+    .hero {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+    }
+    
+    .hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+    
+    .detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    
+    .detail-sidebar {
+        background: var(--bg-primary);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+    
+    .filter-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    
+    .tab-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        border-radius: 8px 8px 0 0;
+        transition: all 0.2s;
+    }
+    
+    .tab-btn:hover { color: var(--accent); }
+    
+    .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+    
+    .qr-code-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .qr-code-item img { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
+    
+    .qr-code-item .info { flex: 1; }
+    
+    .qr-code-item .name { color: var(--text-primary); font-weight: 600; }
+    
+    .qr-code-item .type { color: var(--text-muted); font-size: 0.8rem; }
+    
+    .comment-item { padding: 1rem; background: var(--bg-primary); border-radius: 10px; margin-bottom: 0.75rem; }
+    
+    .comment-item .header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    
+    .comment-item .author { color: var(--accent); font-weight: 600; }
+    
+    .comment-item .time { color: var(--text-muted); font-size: 0.8rem; }
+    
+    .comment-item .content { color: var(--text-primary); }
+    
+    .wall-message {
+        padding: 1rem;
+        background: var(--bg-primary);
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        border-left: 3px solid var(--accent);
+    }
+    
+    .notification-item {
+        padding: 1rem;
+        background: var(--bg-primary);
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .notification-item:hover { background: rgba(139, 92, 246, 0.1); }
+    
+    .notification-item.unread { border-left: 3px solid var(--success); }
+    
+    .notification-item .title { color: var(--text-primary); font-weight: 600; margin-bottom: 0.25rem; }
+    
+    .notification-item .content { color: var(--text-muted); font-size: 0.9rem; }
+    
+    .notification-item .time { color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem; }
+    
+    .profile-header { text-align: center; padding: 2rem; background: var(--bg-primary); border-radius: 12px; margin-bottom: 1.5rem; }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #fff;
+        margin: 0 auto 1rem;
+    }
+    
+    .application-item { padding: 1rem; background: var(--bg-primary); border-radius: 10px; margin-bottom: 0.75rem; }
+    
+    .application-item .applicant { color: var(--accent); font-weight: 600; }
+    
+    .application-item .message { color: var(--text-primary); margin: 0.5rem 0; }
+    
+    .application-item .status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+    }
+    
+    .application-item .status.pending { background: rgba(249, 115, 22, 0.15); color: var(--warning); }
+    
+    .application-item .status.accepted { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    
+    .application-item .status.rejected { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+    
+    .radio-group { display: flex; gap: 1.5rem; margin: 1rem 0; }
+    
+    .radio-item { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+    
+    .radio-item input[type="radio"] { width: auto; margin: 0; }
+    
+    .user-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .user-card:hover { background: rgba(139, 92, 246, 0.1); }
+    
+    .user-card .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-open { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    
+    .status-in-progress { background: rgba(139, 92, 246, 0.15); color: var(--accent); }
+    
+    .status-completed { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    
+    .status-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+    
+    .meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; }
+    
+    .meta span { display: flex; align-items: center; gap: 0.25rem; }
+    
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+    }
+    
+    .btn-outline:hover { background: rgba(139, 92, 246, 0.1); }
+    
+    @media (max-width: 768px) {
+        nav { padding: 0 1rem; }
+        nav .brand { margin-right: 1rem; }
+        main { padding: 1rem; }
+        .projects-grid { grid-template-columns: 1fr; }
+        h1 { font-size: 2rem; }
+        .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    </style>
+    <style>
+    /* New Project Page - Premium Design */
+    .new-project-page {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        cursor: pointer;
+        padding: 0.5rem 0;
+        margin-bottom: 1.5rem;
+        transition: color 0.2s;
+    }
+
+    .back-btn:hover {
+        color: var(--accent);
+    }
+
+    .header-content {
+        text-align: left;
+    }
+
+    .header-content h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--text-primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header-content p {
+        color: var(--text-muted);
+        font-size: 0.9375rem;
+    }
+
+    .project-form-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-block {
+        margin-bottom: 1.75rem;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .label-icon {
+        font-size: 1rem;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 0.9375rem;
+        font-family: inherit;
+        transition: all 0.2s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-textarea {
+        min-height: 140px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .input-hint {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .type-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .type-option {
+        cursor: pointer;
+    }
+
+    .type-option input {
+        display: none;
+    }
+
+    .type-box {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--bg-primary);
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        transition: all 0.25s;
+    }
+
+    .type-option:hover .type-box {
+        border-color: var(--accent);
+        background: rgba(139, 92, 246, 0.05);
+    }
+
+    .type-option input:checked + .type-box {
+        border-color: var(--accent);
+        background: rgba(139, 92, 246, 0.1);
+    }
+
+    .type-icon {
+        font-size: 2rem;
+    }
+
+    .type-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .type-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .type-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .form-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        padding-top: 1.5rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid var(--border);
+    }
+
+    .btn-cancel {
+        padding: 0.875rem 1.5rem;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel:hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+    }
+
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.75rem;
+        background: linear-gradient(135deg, var(--accent), #7c3aed);
+        border: none;
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-submit svg {
+        transition: transform 0.2s;
+    }
+
+    .btn-submit:hover svg {
+        transform: translateX(3px);
+    }
+
+    @media (max-width: 600px) {
+        .new-project-page {
+            padding: 1.5rem 1rem;
         }
-        nav {
-            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
-            padding: 1rem 2rem;
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        nav .brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #8b5cf6, #f97316);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-right: 2rem;
-        }
-        nav button {
-            background: rgba(139, 92, 246, 0.1);
-            color: #a78bfa;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            padding: 0.6rem 1.2rem;
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-        nav button:hover {
-            background: rgba(139, 92, 246, 0.2);
-            border-color: #8b5cf6;
-        }
-        nav button.active {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-        }
-        nav .spacer { flex: 1; }
-        nav .user-info {
-            display: none;
-            align-items: center;
-            gap: 1rem;
-            color: #a78bfa;
-            font-size: 0.9rem;
-        }
-        nav .user-info.visible { display: flex; }
-        nav .role-badge {
-            background: rgba(249, 115, 22, 0.2);
-            color: #f97316;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border: 1px solid rgba(249, 115, 22, 0.3);
-            transition: all 0.3s;
-        }
-        nav .role-badge:hover { background: rgba(249, 115, 22, 0.3); }
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-            padding: 0.5rem;
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 8px;
-            color: #a78bfa;
-            font-size: 1.2rem;
-            margin-right: 0.5rem;
-        }
-        .notification-bell:hover { background: rgba(139, 92, 246, 0.2); }
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: #fff;
-            font-size: 0.7rem;
-            padding: 0.15rem 0.4rem;
-            border-radius: 10px;
-            min-width: 18px;
-            text-align: center;
-        }
-        main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
-        .page { display: none; animation: fadeIn 0.3s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(22, 33, 62, 0.6));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            padding: 2rem;
-            border-radius: 16px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        h1 {
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa, #f97316);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-            font-size: 2rem;
-        }
-        h2 { color: #a78bfa; margin-bottom: 1rem; font-size: 1.5rem; }
-        p { color: #94a3b8; margin-bottom: 0.75rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            margin: 0.5rem 0 1rem;
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            color: #e2e8f0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-        }
-        .btn {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            color: #fff;
-            border: none;
-            padding: 0.875rem 1.75rem;
-            cursor: pointer;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
-        }
-        .btn-secondary {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-        }
-        .btn-secondary:hover { box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #8b5cf6;
-            color: #a78bfa;
-            box-shadow: none;
-        }
-        .btn-outline:hover { background: rgba(139, 92, 246, 0.1); }
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-        }
-        .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
-        .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
-        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        .project-card {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.7));
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            border-radius: 12px;
+        
+        .project-form-card {
             padding: 1.5rem;
-            transition: all 0.3s;
-        }
-        .project-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(139, 92, 246, 0.4);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-        }
-        .project-card h3 { color: #e2e8f0; margin-bottom: 0.5rem; font-size: 1.1rem; }
-        .project-card p { font-size: 0.9rem; margin-bottom: 1rem; }
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
         }
-        .status-open { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
-        .status-in-progress { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
-        .status-completed { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-        .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .meta { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: #64748b; margin-top: 1rem; }
-        .meta span { display: flex; align-items: center; gap: 0.25rem; }
-        .toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 0.5rem; }
-        .toast {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            color: #e2e8f0;
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        
+        .type-selector {
+            grid-template-columns: 1fr;
         }
-        .toast.success { border-color: rgba(34, 197, 94, 0.5); }
-        .toast.error { border-color: rgba(239, 68, 68, 0.5); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { to { opacity: 0; transform: translateX(50px); } }
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 2rem;
-            color: #8b5cf6;
+        
+        .form-grid {
+            grid-template-columns: 1fr;
         }
-        .loading.visible { display: block; }
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #8b5cf6;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-left: 0.5rem;
-            vertical-align: middle;
+        
+        .form-footer {
+            flex-direction: column-reverse;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        
+        .btn-cancel,
+        .btn-submit {
+            width: 100%;
+            justify-content: center;
         }
-        .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; }
-        .hero p { font-size: 1.25rem; color: #94a3b8; max-width: 600px; margin: 0 auto 2rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; color: #a78bfa; font-size: 0.9rem; }
-        .detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-        .detail-sidebar { background: rgba(10, 10, 15, 0.5); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.15); }
-        .filter-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .filter-bar select { width: auto; min-width: 150px; margin: 0; }
-        .empty-state { text-align: center; padding: 3rem; color: #64748b; }
-        .empty-state h3 { color: #8b5cf6; margin-bottom: 0.5rem; }
-        .tab-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(139, 92, 246, 0.2); padding-bottom: 0.5rem; }
-        .tab-btn { background: transparent; border: none; color: #64748b; padding: 0.5rem 1rem; cursor: pointer; border-radius: 8px 8px 0 0; transition: all 0.3s; }
-        .tab-btn:hover { color: #a78bfa; }
-        .tab-btn.active { color: #8b5cf6; border-bottom: 2px solid #8b5cf6; }
-        .qr-code-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(10, 10, 15, 0.5); border-radius: 10px; margin-bottom: 0.5rem; }
-        .qr-code-item img { width: 80px; height: 80px; object-fit: contain; border-radius: 8px; }
-        .qr-code-item .info { flex: 1; }
-        .qr-code-item .name { color: #e2e8f0; font-weight: 600; }
-        .qr-code-item .type { color: #64748b; font-size: 0.8rem; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 1000; display: none; justify-content: center; align-items: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid rgba(139, 92, 246, 0.3); padding: 2rem; border-radius: 16px; max-width: 500px; width: 90%; }
-        .modal h2 { margin-bottom: 1.5rem; }
-        .comment-item { padding: 1rem; background: rgba(10, 10, 15, 0.5); border-radius: 10px; margin-bottom: 0.75rem; }
-        .comment-item .header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-        .comment-item .author { color: #a78bfa; font-weight: 600; }
-        .comment-item .time { color: #64748b; font-size: 0.8rem; }
-        .comment-item .content { color: #e2e8f0; }
-        .wall-message { padding: 1rem; background: rgba(10, 10, 15, 0.5); border-radius: 10px; margin-bottom: 0.75rem; border-left: 3px solid #8b5cf6; }
-        .notification-item { padding: 1rem; background: rgba(10, 10, 15, 0.5); border-radius: 10px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.3s; }
-        .notification-item:hover { background: rgba(139, 92, 246, 0.1); }
-        .notification-item.unread { border-left: 3px solid #22c55e; }
-        .notification-item .title { color: #e2e8f0; font-weight: 600; margin-bottom: 0.25rem; }
-        .notification-item .content { color: #64748b; font-size: 0.9rem; }
-        .notification-item .time { color: #64748b; font-size: 0.75rem; margin-top: 0.25rem; }
-        .profile-header { text-align: center; padding: 2rem; background: rgba(10, 10, 15, 0.5); border-radius: 12px; margin-bottom: 1.5rem; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #f97316); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #fff; margin: 0 auto 1rem; }
-        .application-item { padding: 1rem; background: rgba(10, 10, 15, 0.5); border-radius: 10px; margin-bottom: 0.75rem; }
-        .application-item .applicant { color: #a78bfa; font-weight: 600; }
-        .application-item .message { color: #e2e8f0; margin: 0.5rem 0; }
-        .application-item .status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; }
-        .application-item .status.pending { background: rgba(249, 115, 22, 0.2); color: #f97316; }
-        .application-item .status.accepted { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .application-item .status.rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .radio-group { display: flex; gap: 1.5rem; margin: 1rem 0; }
-        .radio-item { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
-        .radio-item input[type="radio"] { width: auto; margin: 0; }
-        .user-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(10, 10, 15, 0.5); border-radius: 10px; cursor: pointer; transition: all 0.3s; }
-        .user-card:hover { background: rgba(139, 92, 246, 0.1); }
-        .user-card .avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #f97316); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; }
+    }
+/* Auth Pages */
+.auth-page {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.auth-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.auth-footer p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.auth-footer a {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    color: var(--accent-hover);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper .form-control {
+    padding-left: 2.75rem;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    opacity: 0.6;
+}
     </style>
 </head>
 <body>
@@ -297,8 +1121,8 @@
         <button id="nav-myprojects" onclick="navigate('myprojects')">My Projects</button>
         <button id="nav-newproject" onclick="navigate('newproject')">New Project</button>
         <div class="spacer"></div>
-        <div class="user-info" id="userInfo">
-            <div class="notification-bell" onclick="navigate('notifications')" id="notificationBell">
+        <span class="user-info" id="userInfo">
+            <div class="notification-btn" onclick="navigate('notifications')" id="notificationBell">
                 🔔
                 <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
             </div>
@@ -306,7 +1130,8 @@
             <span id="userEmail"></span>
             <span class="role-badge" onclick="toggleRole()" id="roleBadge">Requester</span>
             <button onclick="handleSignOut()" class="btn btn-sm btn-outline">Sign Out</button>
-        </div>
+        </span>
+        <button id="langBtn" class="lang-toggle" onclick="toggleLang()">EN</button>
         <button id="nav-login" onclick="navigate('login')">Login</button>
         <button id="nav-register" onclick="navigate('register')">Register</button>
     </nav>
@@ -327,68 +1152,96 @@
                     <div>
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">1</div>
                         <h3 style="color: #f97316;">Post a Project</h3>
-                        <p style="color: #64748b;">Describe what you need and set your budget</p>
+                        <p style="color: var(--text-muted);">Describe what you need and set your budget</p>
                     </div>
                     <div>
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">2</div>
                         <h3 style="color: #f97316;">Find Collaborators</h3>
-                        <p style="color: #64748b;">Connect with talented people ready to help</p>
+                        <p style="color: var(--text-muted);">Connect with talented people ready to help</p>
                     </div>
                     <div>
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">3</div>
                         <h3 style="color: #f97316;">Get It Done</h3>
-                        <p style="color: #64748b;">Collaborate and complete your project</p>
+                        <p style="color: var(--text-muted);">Collaborate and complete your project</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="page-login" class="page">
-            <div class="card" style="max-width: 450px; margin: 2rem auto;">
-                <h1>Welcome Back</h1>
-                <p>Sign in to continue to your account</p>
-                <form onsubmit="event.preventDefault(); handleSignIn();">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="login-email" placeholder="you@example.com" required>
+            <div class="auth-page">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-icon">🔐</div>
+                        <h1>登录</h1>
+                        <p>欢迎回来</p>
                     </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="login-password" placeholder="Your password" required>
+                    <form onsubmit="event.preventDefault(); handleSignIn();">
+                        <div class="form-group">
+                            <label>邮箱</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📧</span>
+                                <input type="email" id="login-email" class="form-control" placeholder="your@email.com" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>密码</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
+                    </form>
+                    <div class="auth-footer">
+                        <p>还没有账号？<a href="#" onclick="navigate('register')">立即注册</a></p>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Sign In</button>
-                </form>
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <p style="color: #64748b; font-size: 0.9rem;">Don't have an account? <a href="#" onclick="navigate('register')" style="color: #8b5cf6;">Register</a></p>
                 </div>
             </div>
         </div>
 
         <div id="page-register" class="page">
-            <div class="card" style="max-width: 450px; margin: 2rem auto;">
-                <h1>Create Account</h1>
-                <p>Join our community and start collaborating</p>
-                <form onsubmit="event.preventDefault(); handleSignUp();">
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" id="reg-username" placeholder="Choose a username" required>
+            <div class="auth-page">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <div class="auth-icon">✨</div>
+                        <h1>创建账号</h1>
+                        <p>加入我们</p>
                     </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="reg-email" placeholder="you@example.com" required>
+                    <form onsubmit="event.preventDefault(); handleSignUp();">
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input type="text" id="reg-username" class="form-control" placeholder="您的用户名" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>邮箱</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📧</span>
+                                <input type="email" id="reg-email" class="form-control" placeholder="your@email.com" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>密码</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="reg-password" class="form-control" placeholder="至少6位" required minlength="6">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>确认密码</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="reg-password-confirm" class="form-control" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">注册</button>
+                    </form>
+                    <div class="auth-footer">
+                        <p>已有账号？<a href="#" onclick="navigate('login')">立即登录</a></p>
                     </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="reg-password" placeholder="Create a password (min 6 chars)" required minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm Password</label>
-                        <input type="password" id="reg-password-confirm" placeholder="Confirm your password" required>
-                    </div>
-                    <button type="submit" class="btn" style="width: 100%;">Create Account</button>
-                </form>
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <p style="color: #64748b; font-size: 0.9rem;">Already have an account? <a href="#" onclick="navigate('login')" style="color: #8b5cf6;">Sign In</a></p>
                 </div>
             </div>
         </div>
@@ -397,7 +1250,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h1>All Projects</h1>
                 <div class="filter-bar" style="margin: 0;">
-                    <select id="filter-status" onchange="loadProjects()">
+                    <select id="filter-status" class="form-control" onchange="loadProjects()">
                         <option value="">All Status</option>
                         <option value="open">Open</option>
                         <option value="in-progress">In Progress</option>
@@ -417,7 +1270,7 @@
                 <button class="tab-btn" onclick="switchProjectsTab('completed')" id="tab-completed">已完成 (Completed)</button>
             </div>
             <div class="filter-bar" style="margin: 0;">
-                <select id="myfilter-role" onchange="loadMyProjects()">
+                <select id="myfilter-role" class="form-control" onchange="loadMyProjects()">
                     <option value="all">All Projects</option>
                     <option value="created">As Requester</option>
                     <option value="applied">As Receiver</option>
@@ -429,49 +1282,100 @@
         </div>
 
         <div id="page-newproject" class="page">
-            <div class="card" style="max-width: 700px; margin: 0 auto;">
-                <h1>Create New Project</h1>
-                <p>Describe your project and find the perfect collaborator</p>
-                <form onsubmit="event.preventDefault(); handleCreateProject();">
-                    <div class="form-group">
-                        <label>Project Title</label>
-                        <input type="text" id="new-title" placeholder="What do you need help with?" required>
+            <div class="new-project-page">
+                <div class="page-header">
+                    <button class="back-btn" onclick="navigate('projects')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        返回
+                    </button>
+                    <div class="header-content">
+                        <h1>创建新项目</h1>
+                        <p>发布您的项目需求，找到合适的协作者</p>
                     </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="new-description" rows="5" placeholder="Describe your project in detail..." required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Project Type</label>
-                        <div class="radio-group">
-                            <label class="radio-item">
-                                <input type="radio" name="project_type" value="单人项目" checked>
-                                <span>单人项目 (Single)</span>
+                </div>
+                
+                <div class="project-form-card">
+                    <form onsubmit="event.preventDefault(); handleCreateProject();">
+                        <div class="form-block">
+                            <label class="form-label">
+                                <span class="label-icon">📝</span>
+                                项目标题
                             </label>
-                            <label class="radio-item">
-                                <input type="radio" name="project_type" value="多人项目">
-                                <span>多人项目 (Team)</span>
+                            <input type="text" id="new-title" class="form-input" placeholder="简洁明了的项目名称，50字以内" maxlength="50" required>
+                            <div class="input-hint">简洁明了的标题能让协作者快速理解项目</div>
+                        </div>
+
+                        <div class="form-block">
+                            <label class="form-label">
+                                <span class="label-icon">📋</span>
+                                项目描述
                             </label>
+                            <textarea id="new-description" class="form-textarea" placeholder="详细描述项目需求、技术栈、功能要求、交付标准等..." required></textarea>
                         </div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Budget ($)</label>
-                            <input type="number" id="new-budget" placeholder="0" min="0">
+
+                        <div class="form-block">
+                            <label class="form-label">
+                                <span class="label-icon">👥</span>
+                                项目类型
+                            </label>
+                            <div class="type-selector">
+                                <label class="type-option">
+                                    <input type="radio" name="project_type" value="单人项目" checked>
+                                    <div class="type-box">
+                                        <div class="type-icon">👤</div>
+                                        <div class="type-text">
+                                            <span class="type-title">单人项目</span>
+                                            <span class="type-desc">适合简单任务，单人即可完成</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="type-option">
+                                    <input type="radio" name="project_type" value="多人项目">
+                                    <div class="type-box">
+                                        <div class="type-icon">👥</div>
+                                        <div class="type-text">
+                                            <span class="type-title">多人项目</span>
+                                            <span class="type-desc">适合复杂任务，需要团队协作</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select id="new-status">
-                                <option value="open">Open</option>
-                                <option value="in-progress">In Progress</option>
-                            </select>
+
+                        <div class="form-grid">
+                            <div class="form-block">
+                                <label class="form-label">
+                                    <span class="label-icon">💰</span>
+                                    预算范围
+                                </label>
+                                <input type="text" id="new-budget" class="form-input" placeholder="例如：¥5000-8000">
+                            </div>
+                            <div class="form-block">
+                                <label class="form-label">
+                                    <span class="label-icon">📅</span>
+                                    截止日期
+                                </label>
+                                <input type="text" id="new-deadline" class="form-input" placeholder="例如：2026年6月30日">
+                            </div>
                         </div>
-                    </div>
-                    <div class="btn-group">
-                        <button type="submit" class="btn">Create Project</button>
-                        <button type="button" class="btn btn-outline" onclick="navigate('projects')">Cancel</button>
-                    </div>
-                </form>
+
+                        <div class="form-block">
+                            <label class="form-label">
+                                <span class="label-icon">📞</span>
+                                联系方式
+                            </label>
+                            <input type="text" id="new-contact" class="form-input" placeholder="微信 / 邮箱 / 手机号">
+                        </div>
+
+                        <div class="form-footer">
+                            <button type="button" class="btn-cancel" onclick="navigate('projects')">取消</button>
+                            <button type="submit" class="btn-submit">
+                                <span>发布项目</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -531,6 +1435,55 @@
 
 <script>
 (function() {
+    const i18n = {
+        en: {
+            home: 'Home', projects: 'Projects', myProjects: 'My Projects',
+            profile: 'Profile', notifications: 'Notifications',
+            login: 'Sign In', register: 'Sign Up', logout: 'Sign Out',
+            search: 'Search...', createProject: 'New Project',
+            singleProject: 'Single Person', teamProject: 'Team Project',
+            open: 'Open', inProgress: 'In Progress', completed: 'Completed',
+            apply: 'Apply', accept: 'Accept', reject: 'Reject',
+            submit: 'Submit', cancel: 'Cancel', save: 'Save', delete: 'Delete',
+            comment: 'Comment', leaveMessage: 'Leave a message',
+            noProjects: 'No projects yet', noNotifications: 'No notifications',
+            noComments: 'No comments yet', noQRCodes: 'No QR codes added yet',
+            welcome: 'Welcome', createAccount: 'Create Account',
+            email: 'Email', password: 'Password', username: 'Username',
+            confirmPassword: 'Confirm Password',
+            alreadyHaveAccount: 'Already have an account?',
+            dontHaveAccount: "Don't have an account?",
+        },
+        zh: {
+            home: '首页', projects: '项目', myProjects: '我的项目',
+            profile: '个人主页', notifications: '通知',
+            login: '登录', register: '注册', logout: '退出',
+            search: '搜索...', createProject: '创建项目',
+            singleProject: '单人项目', teamProject: '多人项目',
+            open: '开放', inProgress: '进行中', completed: '已完成',
+            apply: '申请', accept: '接受', reject: '拒绝',
+            submit: '提交', cancel: '取消', save: '保存', delete: '删除',
+            comment: '留言', leaveMessage: '留言',
+            noProjects: '暂无项目', noNotifications: '暂无通知',
+            noComments: '暂无评论', noQRCodes: '暂无收款码',
+            welcome: '欢迎', createAccount: '创建账号',
+            email: '邮箱', password: '密码', username: '用户名',
+            confirmPassword: '确认密码',
+            alreadyHaveAccount: '已有账号？',
+            dontHaveAccount: '没有账号？',
+        }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'zh';
+    window.t = function(key) { return i18n[currentLang][key] || key; };
+
+    window.toggleLang = function() {
+        currentLang = currentLang === 'en' ? 'zh' : 'en';
+        localStorage.setItem('lang', currentLang);
+        const btn = document.getElementById('langBtn');
+        if (btn) btn.textContent = currentLang === 'en' ? '中文' : 'EN';
+    };
+
     const SUPABASE_URL = 'https://byalvlknbqezukucyiul.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_asfzUdCKP4GkNRaf_oNfPQ_9W_LVVik';
 
@@ -724,45 +1677,52 @@
     let projectsTab = 'active';
 
     window.navigate = function(page, id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        const pageEl = document.getElementById('page-' + page);
-        if (pageEl) pageEl.classList.add('active');
-        const navBtn = document.getElementById('nav-' + page);
-        if (navBtn) navBtn.classList.add('active');
+        try {
+            console.log('navigate called with', page, id);
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            const pageEl = document.getElementById('page-' + page);
+            if (pageEl) pageEl.classList.add('active');
+            const navBtn = document.getElementById('nav-' + page);
+            if (navBtn) navBtn.classList.add('active');
 
-        if (page === 'project-detail') {
-            if (id) sessionStorage.setItem('view_project_id', id);
-            loadProjectDetail();
-        } else if (page === 'projects') {
-            loadProjects();
-        } else if (page === 'myprojects') {
-            loadMyProjects();
-        } else if (page === 'profile') {
-            loadProfile();
-        } else if (page === 'notifications') {
-            loadNotifications();
-        } else if (page === 'user-wall') {
-            if (id) {
-                currentViewingUserId = id;
-                loadUserWall(id);
+            if (page === 'project-detail') {
+                if (id) sessionStorage.setItem('view_project_id', id);
+                loadProjectDetail();
+            } else if (page === 'projects') {
+                console.log('projects-list element', document.getElementById('projects-list'));
+                loadProjects();
+            } else if (page === 'myprojects') {
+                loadMyProjects();
+            } else if (page === 'profile') {
+                loadProfile();
+            } else if (page === 'notifications') {
+                loadNotifications();
+            } else if (page === 'user-wall') {
+                if (id) {
+                    currentViewingUserId = id;
+                    loadUserWall(id);
+                }
             }
+        } catch(e) {
+            console.error('Navigate error:', e);
         }
     };
 
     window.toggleRole = function() {
         if (!currentProfile) return;
         const newRole = currentProfile.role === 'requester' ? 'receiver' : 'requester';
+        const roleName = newRole === 'requester' ? '发布者' : '接收者';
         updateProfile({ role: newRole });
-        showToast('Role switched to ' + newRole, 'success');
+        showToast('已切换为' + roleName + '模式', 'success');
     };
 
     async function updateProfile(data) {
         if (!currentUser) return;
         await supabase.from('profiles').eq('id', currentUser.id).update(data);
         currentProfile.role = data.role || currentProfile.role;
-        const role = currentProfile.role || 'requester';
-        document.getElementById('roleBadge').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+        const roleName = currentProfile.role === 'requester' ? '发布者' : '接收者';
+        document.getElementById('roleBadge').textContent = roleName;
     }
 
     function showToast(message, type = 'info') {
@@ -800,8 +1760,8 @@
             navRegister.style.display = 'none';
             document.getElementById('userEmail').textContent = currentUser.email;
             if (currentProfile) {
-                const role = currentProfile.role || 'requester';
-                document.getElementById('roleBadge').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                const roleName = currentProfile.role === 'requester' ? '发布者' : '接收者';
+                document.getElementById('roleBadge').textContent = roleName;
                 if (!currentProfile.qrCodes) currentProfile.qrCodes = [];
             }
         } else {
@@ -903,40 +1863,84 @@
         navigate('home');
     };
 
-    window.loadProjects = async function() {
+    window.loadProjects = function() {
+        console.log('loadProjects called, container:', document.getElementById('projects-list'));
         const container = document.getElementById('projects-list');
-        const statusFilter = document.getElementById('filter-status')?.value || '';
+        let statusFilter = document.getElementById('filter-status')?.value || '';
+        statusFilter = statusFilter.replace('in-progress', 'in_progress');
 
-        container.innerHTML = '<div class="loading visible">Loading projects</div>';
+        container.innerHTML = '<div class="loading visible">加载中...</div>';
 
-        try {
-            let url = '/rest/v1/projects?select=*&order=created_at.desc';
-            if (statusFilter) {
-                url += '&status=eq.' + encodeURIComponent(statusFilter);
+        let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+        console.log('projects loaded', projects.length);
+
+        const renderAndReturn = () => {
+            if (projects.length > 0) {
+                renderProjects(projects, statusFilter, container);
+            } else {
+                renderProjects(projects, statusFilter, container);
             }
-            const { data: projects } = await fetchApi(url);
+        };
 
-            if (!projects || projects.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No Projects Found</h3><p>Be the first to create a project!</p></div>';
-                return;
-            }
-
-            container.innerHTML = '<div class="project-grid">' + projects.map(p => `
-                <div class="project-card" onclick="viewProject('${p.id}')">
-                    <h3>${escapeHtml(p.title)}</h3>
-                    <p>${escapeHtml(p.description.substring(0, 100))}${p.description.length > 100 ? '...' : ''}</p>
-                    <span class="status-badge status-${p.status}">${p.status.replace('-', ' ')}</span>
-                    ${p.project_type ? `<span class="status-badge" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; margin-left: 0.5rem;">${escapeHtml(p.project_type)}</span>` : ''}
-                    <div class="meta">
-                        <span>Budget: $${p.budget || 0}</span>
-                        <span>${new Date(p.created_at).toLocaleDateString()}</span>
-                    </div>
-                </div>
-            `).join('') + '</div>';
-        } catch (e) {
-            container.innerHTML = '<div class="empty-state"><h3>Error Loading Projects</h3><p>' + escapeHtml(e.message) + '</p></div>';
+        const session = localStorage.getItem('sb_session');
+        if (session) {
+            fetchApi('/rest/v1/projects?select=*&order=created_at.desc')
+                .then(({ data }) => {
+                    if (data && data.length > 0) {
+                        const localIds = projects.map(p => p.id);
+                        const newProjects = data.filter(p => !localIds.includes(p.id));
+                        projects = [...projects, ...newProjects];
+                    }
+                    renderProjects(projects, statusFilter, container);
+                })
+                .catch(() => {
+                    renderProjects(projects, statusFilter, container);
+                });
+        } else {
+            renderProjects(projects, statusFilter, container);
         }
     };
+
+    function renderProjects(projects, statusFilter, container) {
+        console.log('renderProjects called, projects:', projects.length);
+        if (statusFilter) {
+            projects = projects.filter(p => p.status === statusFilter);
+        }
+
+        if (!projects || projects.length === 0) {
+            container.innerHTML = '<div class="empty-state"><h3>暂无项目</h3><p>成为第一个发布项目的人！</p></div>';
+            return;
+        }
+
+        const statusMap = {
+            'open': '🟢 开放',
+            'in_progress': '🟡 进行中',
+            'completed': '🟣 已完成'
+        };
+
+        const typeMap = {
+            '单人项目': '👤 单人',
+            '多人项目': '👥 多人'
+        };
+
+        container.innerHTML = '<div class="projects-grid">' + projects.map(p => `
+            <div class="project-card" onclick="viewProject('${p.id}')">
+                <div class="project-card-header">
+                    <h3>${escapeHtml(p.title)}</h3>
+                    ${p.project_type ? `<span class="badge badge-team">${typeMap[p.project_type] || p.project_type}</span>` : ''}
+                </div>
+                <p class="project-desc">${escapeHtml(p.description.substring(0, 80))}${p.description.length > 80 ? '...' : ''}</p>
+                <div class="project-card-footer">
+                    <span class="badge badge-${p.status === 'open' ? 'open' : p.status === 'in_progress' ? 'progress' : 'done'}">${statusMap[p.status] || p.status}</span>
+                    <span class="budget">💰 ${escapeHtml(p.budget || '待定')}</span>
+                </div>
+                <div class="project-meta">
+                    <span>👤 ${escapeHtml(p.requester_name || '未知')}</span>
+                    <span>📅 ${escapeHtml(p.deadline || '不限')}</span>
+                </div>
+            </div>
+        `).join('') + '</div>';
+    }
 
     window.loadMyProjects = async function() {
         const container = document.getElementById('myprojects-list');
@@ -978,7 +1982,7 @@
                     <h3>${escapeHtml(p.title)}</h3>
                     <p>${escapeHtml(p.description.substring(0, 100))}${p.description.length > 100 ? '...' : ''}</p>
                     <span class="status-badge status-${p.status}">${p.status.replace('-', ' ')}</span>
-                    ${p.project_type ? `<span class="status-badge" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; margin-left: 0.5rem;">${escapeHtml(p.project_type)}</span>` : ''}
+                    ${p.project_type ? `<span class="status-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-hover); margin-left: 0.5rem;">${escapeHtml(p.project_type)}</span>` : ''}
                     <div class="meta" style="margin-top: 1rem;">
                         <button class="btn btn-sm btn-secondary" onclick="viewProject('${p.id}')">View Details</button>
                         ${p.requester_id === currentUser.id ? `<button class="btn btn-sm btn-outline" onclick="showApplications('${p.id}')">Applications (${getApplicationCount(p.id)})</button>` : ''}
@@ -1042,8 +2046,8 @@
                         <button class="btn btn-outline btn-sm" onclick="navigate('projects')" style="margin-bottom: 1rem;">← Back to Projects</button>
                         <h1>${escapeHtml(project.title)}</h1>
                         <span class="status-badge status-${project.status}">${project.status.replace('-', ' ')}</span>
-                        ${project.project_type ? `<span class="status-badge" style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; margin-left: 0.5rem;">${escapeHtml(project.project_type)}</span>` : ''}
-                        <p style="margin-top: 1rem;">Posted by: <span style="color: #a78bfa; cursor: pointer;" onclick="navigate('user-wall', '${project.requester_id}')">${escapeHtml(requester?.username || 'Unknown')}</span></p>
+                        ${project.project_type ? `<span class="status-badge" style="background: rgba(139, 92, 246, 0.2); color: var(--accent-hover); margin-left: 0.5rem;">${escapeHtml(project.project_type)}</span>` : ''}
+                        <p style="margin-top: 1rem;">Posted by: <span style="color: var(--accent); cursor: pointer;" onclick="navigate('user-wall', '${project.requester_id}')">${escapeHtml(requester?.username || 'Unknown')}</span></p>
                         <p style="margin-top: 1.5rem;">${escapeHtml(project.description)}</p>
                         <div class="meta" style="margin-top: 2rem;">
                             <span>Budget: $${project.budget || 0}</span>
@@ -1061,13 +2065,13 @@
                         ${canApply ? `
                             <button class="btn" style="width: 100%;" onclick="openApplyModal('${project.id}')">申请承接 (Apply)</button>
                         ` : ''}
-                        ${!currentUser ? '<p style="color: #64748b; text-align: center;">Sign in to take action</p>' : ''}
+                        ${!currentUser ? '<p style="color: var(--text-muted); text-align: center;">Sign in to take action</p>' : ''}
                     </div>
                 </div>
                 <div class="card" style="margin-top: 1.5rem;">
                     <h2>Comments / 留言</h2>
                     <div id="comments-list">
-                        ${comments.length === 0 ? '<p style="color: #64748b;">No comments yet. Be the first to comment!</p>' : comments.map(c => `
+                        ${comments.length === 0 ? '<p style="color: var(--text-muted);">No comments yet. Be the first to comment!</p>' : comments.map(c => `
                             <div class="comment-item">
                                 <div class="header">
                                     <span class="author">${escapeHtml(c.username)}</span>
@@ -1082,7 +2086,7 @@
                             <textarea id="comment-input" rows="3" placeholder="Leave a comment..." required></textarea>
                             <button type="submit" class="btn btn-sm">Post Comment</button>
                         </form>
-                    ` : '<p style="color: #64748b; margin-top: 1rem;">Sign in to leave a comment.</p>'}
+                    ` : '<p style="color: var(--text-muted); margin-top: 1rem;">Sign in to leave a comment.</p>'}
                 </div>
             `;
         } catch (e) {
@@ -1174,7 +2178,7 @@
         const container = document.getElementById('applications-list');
 
         if (applications.length === 0) {
-            container.innerHTML = '<p style="color: #64748b;">No applications yet.</p>';
+            container.innerHTML = '<p style="color: var(--text-muted);">No applications yet.</p>';
         } else {
             container.innerHTML = applications.map(a => `
                 <div class="application-item">
@@ -1183,7 +2187,7 @@
                         <span class="status ${a.status}">${a.status}</span>
                     </div>
                     <p class="message">${escapeHtml(a.message)}</p>
-                    <p style="color: #64748b; font-size: 0.8rem;">${new Date(a.created_at).toLocaleString()}</p>
+                    <p style="color: var(--text-muted); font-size: 0.8rem;">${new Date(a.created_at).toLocaleString()}</p>
                     ${a.status === 'pending' && currentUser?.id === sessionStorage.getItem('view_project_id') ? `
                         <div class="btn-group" style="margin-top: 0.5rem;">
                             <button class="btn btn-sm btn-secondary" onclick="handleApplication('${a.id}', 'accepted')">Accept</button>
@@ -1244,19 +2248,20 @@
 
     window.handleCreateProject = async function() {
         if (!currentUser) {
-            showToast('Please sign in first', 'error');
+            showToast('请先登录', 'error');
             navigate('login');
             return;
         }
 
         const title = document.getElementById('new-title').value;
         const description = document.getElementById('new-description').value;
-        const budget = parseInt(document.getElementById('new-budget').value) || 0;
-        const status = document.getElementById('new-status').value;
+        const budget = document.getElementById('new-budget').value;
+        const deadline = document.getElementById('new-deadline').value;
+        const contact = document.getElementById('new-contact').value;
         const projectType = document.querySelector('input[name="project_type"]:checked')?.value || '单人项目';
 
         if (!title || !description) {
-            showToast('Please fill in all required fields', 'error');
+            showToast('请填写所有必填项', 'error');
             return;
         }
 
@@ -1264,17 +2269,22 @@
             title,
             description,
             budget,
-            status,
+            deadline,
+            contact,
+            status: 'open',
             requester_id: currentUser.id,
+            requester_name: currentProfile?.username || currentUser.email,
             project_type: projectType
         });
 
-        showToast('Project created successfully!', 'success');
+        showToast('项目创建成功！', 'success');
         navigate('myprojects');
 
         document.getElementById('new-title').value = '';
         document.getElementById('new-description').value = '';
         document.getElementById('new-budget').value = '';
+        document.getElementById('new-deadline').value = '';
+        document.getElementById('new-contact').value = '';
     };
 
     window.loadProfile = function() {
@@ -1304,7 +2314,7 @@
                 <h2>QR Codes / 收款码</h2>
                 <p>Add your payment QR codes (WeChat, Alipay, etc.)</p>
                 <div id="qr-codes-list">
-                    ${currentProfile.qrCodes.length === 0 ? '<p style="color: #64748b;">No QR codes added yet.</p>' : currentProfile.qrCodes.map((qr, i) => `
+                    ${currentProfile.qrCodes.length === 0 ? '<p style="color: var(--text-muted);">No QR codes added yet.</p>' : currentProfile.qrCodes.map((qr, i) => `
                         <div class="qr-code-item">
                             <img src="${qr.url}" alt="${escapeHtml(qr.name)}">
                             <div class="info">
@@ -1329,7 +2339,7 @@
                         </div>
                         <div class="form-group">
                             <label>Type / 类型</label>
-                            <select id="qr-type">
+                            <select id="qr-type" class="form-control">
                                 <option value="微信">微信 (WeChat)</option>
                                 <option value="支付宝">支付宝 (Alipay)</option>
                                 <option value="其他">其他 (Other)</option>
@@ -1473,13 +2483,13 @@
                 <div class="card">
                     <h2>Message Wall / 留言墙</h2>
                     <div id="wall-messages-list">
-                        ${wallMessages.length === 0 ? '<p style="color: #64748b;">No messages yet. Leave a message!</p>' : wallMessages.map(m => `
+                        ${wallMessages.length === 0 ? '<p style="color: var(--text-muted);">No messages yet. Leave a message!</p>' : wallMessages.map(m => `
                             <div class="wall-message">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span style="color: #a78bfa; font-weight: 600;">${escapeHtml(m.from_username)}</span>
-                                    <span style="color: #64748b; font-size: 0.8rem;">${new Date(m.created_at).toLocaleString()}</span>
+                                    <span style="color: var(--accent); font-weight: 600;">${escapeHtml(m.from_username)}</span>
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">${new Date(m.created_at).toLocaleString()}</span>
                                 </div>
-                                <div style="color: #e2e8f0;">${escapeHtml(m.content)}</div>
+                                <div style="color: var(--text-primary);">${escapeHtml(m.content)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -1488,7 +2498,7 @@
                             <textarea id="wall-message-input" rows="3" placeholder="Leave a message..." required></textarea>
                             <button type="submit" class="btn btn-sm">Post Message</button>
                         </form>
-                    ` : currentUser && isOwnProfile ? '<p style="color: #64748b; margin-top: 1rem;">This is your profile.</p>' : '<p style="color: #64748b; margin-top: 1rem;">Sign in to leave a message.</p>'}
+                    ` : currentUser && isOwnProfile ? '<p style="color: var(--text-muted); margin-top: 1rem;">This is your profile.</p>' : '<p style="color: var(--text-muted); margin-top: 1rem;">Sign in to leave a message.</p>'}
                 </div>
             `;
         }).catch(e => {
@@ -1522,6 +2532,21 @@
         return div.innerHTML;
     }
 
+    // Type card selection handler
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.type-card').forEach(function(card) {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName === 'INPUT') return;
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    radio.checked = true;
+                }
+            });
+        });
+    });
+
     supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' && session) {
             currentUser = session.user;
@@ -1534,6 +2559,138 @@
     });
 
     loadCurrentUser();
+
+    // Initialize demo profiles
+    const profiles = JSON.parse(localStorage.getItem('profiles') || '[]');
+    if (profiles.length === 0) {
+        const demoProfiles = [
+            { id: 'demo-requester-1', username: '张经理', role: 'requester', email: 'zhang@example.com' },
+            { id: 'demo-requester-2', username: '李设计师', role: 'requester', email: 'li@example.com' },
+            { id: 'demo-requester-3', username: '王总', role: 'requester', email: 'wang@example.com' },
+            { id: 'demo-requester-4', username: '陈营销', role: 'requester', email: 'chen@example.com' },
+            { id: 'demo-requester-5', username: '刘数据', role: 'requester', email: 'liu@example.com' },
+            { id: 'demo-requester-6', username: '赵老板', role: 'requester', email: 'zhao@example.com' },
+            { id: 'demo-requester-7', username: '孙创意', role: 'requester', email: 'sun@example.com' },
+            { id: 'demo-requester-8', username: '周运营', role: 'requester', email: 'zhou@example.com' },
+            { id: 'demo-receiver-1', username: '开发者小王', role: 'receiver', email: 'dev@example.com' },
+            { id: 'demo-receiver-2', username: '剪辑师小李', role: 'receiver', email: 'editor@example.com' },
+            { id: 'demo-receiver-3', username: '设计师小张', role: 'receiver', email: 'designer@example.com' }
+        ];
+        localStorage.setItem('profiles', JSON.stringify(demoProfiles));
+    }
+
+    // Always reset demo projects for fresh start
+    const demoProjects = [
+        {
+            id: 'demo-1',
+            title: '企业官网前端开发',
+            description: '需要开发一个响应式企业官网，使用React+TailwindCSS，包含首页、关于我们、产品服务、联系我们等页面。要求设计现代简洁，符合企业形象。需要响应式布局，兼容手机和平板。',
+            budget: '¥8,000-12,000',
+            deadline: '2026年6月30日',
+            contact: '微信：corp_web',
+            status: 'open',
+            project_type: '单人项目',
+            requester_id: 'demo-requester-1',
+            requester_name: '张经理',
+            created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+        },
+        {
+            id: 'demo-2',
+            title: '移动端App UI设计',
+            description: '设计一款健身记录App的UI原型，包含首页、运动记录、社区、我的 四个主要Tab。需要提供Figma高保真原型和完整设计源文件，要求现代简约风格。',
+            budget: '¥5,000-8,000',
+            deadline: '2026年6月15日',
+            contact: '邮箱：design@fitapp.com',
+            status: 'open',
+            project_type: '单人项目',
+            requester_id: 'demo-requester-2',
+            requester_name: '李设计师',
+            created_at: new Date(Date.now() - 86400000).toISOString()
+        },
+        {
+            id: 'demo-3',
+            title: '电商后台管理系统开发',
+            description: '开发一个电商后台管理系统，包含商品管理、订单管理、用户管理、数据统计等功能。需要Node.js后端+React前端，数据库使用PostgreSQL。需要API文档和单元测试。',
+            budget: '¥15,000-25,000',
+            deadline: '2026年7月15日',
+            contact: '微信：ecom_admin',
+            status: 'in_progress',
+            project_type: '多人项目',
+            requester_id: 'demo-requester-3',
+            requester_name: '王总',
+            receiver_ids: ['demo-receiver-1'],
+            created_at: new Date(Date.now() - 86400000 * 5).toISOString()
+        },
+        {
+            id: 'demo-4',
+            title: '产品宣传视频剪辑',
+            description: '需要将一段20分钟的产品宣传视频剪辑成3分钟的精华版，配合字幕、配乐和转场效果。要求专业剪辑，节奏感强，符合品牌调性。',
+            budget: '¥2,000-3,500',
+            deadline: '2026年5月20日',
+            contact: '邮箱：video@brand.com',
+            status: 'completed',
+            project_type: '单人项目',
+            requester_id: 'demo-requester-4',
+            requester_name: '陈营销',
+            receiver_ids: ['demo-receiver-2'],
+            created_at: new Date(Date.now() - 86400000 * 10).toISOString()
+        },
+        {
+            id: 'demo-5',
+            title: 'Python数据爬虫开发',
+            description: '需要爬取多个电商平台的商品价格数据，支持定时任务、数据导出Excel功能。需要处理反爬机制，数据存储到MySQL数据库。',
+            budget: '¥3,000-5,000',
+            deadline: '2026年6月10日',
+            contact: '微信：data_spider',
+            status: 'open',
+            project_type: '单人项目',
+            requester_id: 'demo-requester-5',
+            requester_name: '刘数据',
+            created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+        },
+        {
+            id: 'demo-6',
+            title: '小程序商城开发',
+            description: '开发一个微信小程序商城，包含商品展示、购物车、订单管理、支付功能。需要uni-app开发，适配微信和支付宝小程序。',
+            budget: '¥10,000-15,000',
+            deadline: '2026年7月1日',
+            contact: '邮箱：minipro@shop.com',
+            status: 'open',
+            project_type: '多人项目',
+            requester_id: 'demo-requester-6',
+            requester_name: '赵老板',
+            created_at: new Date(Date.now() - 86400000 * 4).toISOString()
+        },
+        {
+            id: 'demo-7',
+            title: 'Logo和品牌视觉设计',
+            description: '为一家新创立的咖啡品牌设计Logo和全套VI系统，包含名片、信封、工牌、包装等。要求简约现代，有品牌特色。',
+            budget: '¥4,000-6,000',
+            deadline: '2026年6月25日',
+            contact: '微信：cafe_brand',
+            status: 'in_progress',
+            project_type: '单人项目',
+            requester_id: 'demo-requester-7',
+            requester_name: '孙创意',
+            receiver_ids: ['demo-receiver-3'],
+            created_at: new Date(Date.now() - 86400000 * 7).toISOString()
+        },
+        {
+            id: 'demo-8',
+            title: 'SEO优化与推广方案',
+            description: '为一个资讯类网站提供SEO优化方案，包括关键词分析、内容优化、外链建设、技术SEO等。需要提供详细执行计划和预期效果。',
+            budget: '¥5,000-8,000',
+            deadline: '2026年6月5日',
+            contact: '邮箱：seo@news.com',
+            status: 'open',
+            project_type: '单人项目',
+            requester_id: 'demo-requester-8',
+            requester_name: '周运营',
+            created_at: new Date(Date.now() - 86400000 * 1).toISOString()
+        }
+    ];
+    localStorage.setItem('projects', JSON.stringify(demoProjects));
+
     navigate('home');
 })();
 </script>
