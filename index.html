@@ -386,13 +386,15 @@
     .modal-overlay.active { display: flex; }
     
     .modal {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0.05) 100%), var(--bg-secondary);
+        border: 1px solid rgba(139, 92, 246, 0.25);
         border-radius: 20px;
         padding: 2rem;
         max-width: 500px;
         width: 100%;
         animation: modalIn 0.3s ease;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(139, 92, 246, 0.15);
     }
     
     @keyframes modalIn {
@@ -402,6 +404,51 @@
     
     .modal h2 {
         margin-bottom: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    .modal .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .modal textarea,
+    .modal input[type="text"],
+    .modal input[type="email"],
+    .modal input[type="password"] {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(0, 0, 0, 0.2) 100%), var(--bg-primary);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 0.9375rem;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal textarea:focus,
+    .modal input[type="text"]:focus,
+    .modal input[type="email"]:focus,
+    .modal input[type="password"]:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal textarea::placeholder,
+    .modal input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .modal textarea {
+        resize: vertical;
+        min-height: 120px;
+        border-radius: 12px;
     }
     
     .toast-container {
@@ -633,15 +680,37 @@
     
     .qr-code-item .type { color: var(--text-muted); font-size: 0.8rem; }
     
-    .comment-item { padding: 1rem; background: var(--bg-primary); border-radius: 10px; margin-bottom: 0.75rem; }
-    
-    .comment-item .header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-    
-    .comment-item .author { color: var(--accent); font-weight: 600; }
-    
-    .comment-item .time { color: var(--text-muted); font-size: 0.8rem; }
-    
-    .comment-item .content { color: var(--text-primary); }
+    .comment-item {
+        padding: 1.25rem;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.03) 100%), var(--bg-primary);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border-left: 3px solid var(--accent);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.08);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .comment-item:hover {
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(139, 92, 246, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .comment-item .header { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
+
+    .comment-item .author { color: var(--accent); font-weight: 600; font-size: 0.95rem; }
+
+    .comment-item .time { color: var(--text-muted); font-size: 0.75rem; }
+
+    .comment-item .content {
+        color: var(--text-primary);
+        line-height: 1.7;
+        font-size: 0.9375rem;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        border: 1px solid rgba(139, 92, 246, 0.1);
+    }
     
     .wall-message {
         padding: 1rem;
@@ -685,8 +754,22 @@
         margin: 0 auto 1rem;
     }
     
-    .application-item { padding: 1rem; background: var(--bg-primary); border-radius: 10px; margin-bottom: 0.75rem; }
-    
+    .application-item {
+        padding: 1.25rem;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.03) 100%), var(--bg-primary);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border-left: 3px solid var(--accent);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.08);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .application-item:hover {
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4), 0 0 60px rgba(139, 92, 246, 0.15);
+        transform: translateY(-2px);
+    }
+
     .application-item .applicant { color: var(--accent); font-weight: 600; }
     
     .application-item .message { color: var(--text-primary); margin: 0.5rem 0; }
@@ -856,20 +939,21 @@
     .form-textarea {
         width: 100%;
         padding: 1rem 1.25rem;
-        background: var(--bg-primary);
-        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%), var(--bg-primary);
+        border: 1px solid rgba(139, 92, 246, 0.2);
         border-radius: 12px;
         color: var(--text-primary);
         font-size: 0.9375rem;
         font-family: inherit;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .form-input:focus,
     .form-textarea:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 30px rgba(139, 92, 246, 0.1);
     }
 
     .form-input::placeholder,
@@ -881,6 +965,7 @@
         min-height: 140px;
         resize: vertical;
         line-height: 1.6;
+        border-radius: 14px;
     }
 
     .input-hint {
@@ -2008,6 +2093,7 @@
     };
 
     window.viewProject = function(id) {
+        console.log('viewProject called with id:', id);
         sessionStorage.setItem('view_project_id', id);
         navigate('project-detail');
     };
@@ -2016,28 +2102,28 @@
         const id = sessionStorage.getItem('view_project_id');
         const container = document.getElementById('project-detail-content');
 
+        console.log('loadProjectDetail called - id:', id, 'container:', container);
+
         if (!id) {
+            console.log('No project id found in sessionStorage');
             container.innerHTML = '<div class="empty-state"><h3>Project Not Found</h3><p>Please select a project from the list.</p></div>';
             return;
         }
 
         container.innerHTML = '<div class="loading visible">Loading project</div>';
 
-        try {
-            const { data: projects } = await fetchApi('/rest/v1/projects?select=*&id=eq.' + encodeURIComponent(id) + '&limit=1');
-            const project = projects?.[0];
+        const getLocalProject = () => {
+            const localProjects = JSON.parse(localStorage.getItem('projects') || '[]');
+            console.log('getLocalProject - localStorage projects count:', localProjects.length, 'looking for id:', id);
+            const found = localProjects.find(p => p.id === id);
+            console.log('getLocalProject - found project:', found ? found.title : 'NOT FOUND');
+            return found;
+        };
 
-            if (!project) {
-                container.innerHTML = '<div class="empty-state"><h3>Project Not Found</h3></div>';
-                return;
-            }
-
-            const { data: profiles } = await fetchApi('/rest/v1/profiles?select=*&id=eq.' + encodeURIComponent(project.requester_id) + '&limit=1');
-            const requester = profiles?.[0];
-
+        const renderProjectDetail = (project, requester) => {
+            console.log('renderProjectDetail called with project:', project?.title);
             const isOwner = currentUser && project.requester_id === currentUser.id;
             const canApply = currentUser && !isOwner && project.status === 'open';
-
             const comments = JSON.parse(localStorage.getItem('comments') || '[]').filter(c => c.project_id === id);
 
             container.innerHTML = `
@@ -2071,7 +2157,7 @@
                 <div class="card" style="margin-top: 1.5rem;">
                     <h2>Comments / 留言</h2>
                     <div id="comments-list">
-                        ${comments.length === 0 ? '<p style="color: var(--text-muted);">No comments yet. Be the first to comment!</p>' : comments.map(c => `
+                        ${comments.length === 0 ? '<p style="color: var(--text-muted); padding: 1.25rem; background: rgba(139, 92, 246, 0.08); border-radius: 12px; border-left: 3px solid var(--accent); text-align: center;">No comments yet. Be the first to comment!</p>' : comments.map(c => `
                             <div class="comment-item">
                                 <div class="header">
                                     <span class="author">${escapeHtml(c.username)}</span>
@@ -2083,14 +2169,52 @@
                     </div>
                     ${currentUser ? `
                         <form onsubmit="event.preventDefault(); addComment('${id}');" style="margin-top: 1rem;">
-                            <textarea id="comment-input" rows="3" placeholder="Leave a comment..." required></textarea>
+                            <textarea id="comment-input" class="form-textarea" rows="3" placeholder="Leave a comment..." required></textarea>
                             <button type="submit" class="btn btn-sm">Post Comment</button>
                         </form>
                     ` : '<p style="color: var(--text-muted); margin-top: 1rem;">Sign in to leave a comment.</p>'}
                 </div>
             `;
+        };
+
+        if (id.startsWith('demo-')) {
+            const localProject = getLocalProject();
+            if (localProject) {
+                renderProjectDetail(localProject, null);
+                return;
+            }
+        }
+
+        try {
+            const { data: projects } = await fetchApi('/rest/v1/projects?select=*&id=eq.' + encodeURIComponent(id) + '&limit=1');
+            const project = projects?.[0];
+
+            if (!project) {
+                const localProject = getLocalProject();
+                if (localProject) {
+                    renderProjectDetail(localProject, null);
+                    return;
+                }
+                container.innerHTML = '<div class="empty-state"><h3>Project Not Found</h3></div>';
+                return;
+            }
+
+            let requester = null;
+            try {
+                const { data: profiles } = await fetchApi('/rest/v1/profiles?select=*&id=eq.' + encodeURIComponent(project.requester_id) + '&limit=1');
+                requester = profiles?.[0];
+            } catch (e) {
+                console.warn('Failed to fetch requester profile, using local data');
+            }
+
+            renderProjectDetail(project, requester);
         } catch (e) {
-            container.innerHTML = '<div class="empty-state"><h3>Error</h3><p>' + escapeHtml(e.message) + '</p></div>';
+            const localProject = getLocalProject();
+            if (localProject) {
+                renderProjectDetail(localProject, null);
+                return;
+            }
+            container.innerHTML = '<div class="empty-state"><h3>Error loading project</h3><p>Unable to connect to server. Please check your connection and try again.</p><p style="color: var(--text-muted); margin-top: 0.5rem;">Details: ' + escapeHtml(e.message) + '</p></div>';
         }
     };
 
@@ -2694,5 +2818,3 @@
     navigate('home');
 })();
 </script>
-</body>
-</html>
