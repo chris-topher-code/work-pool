@@ -3030,7 +3030,8 @@
             navRegister.style.display = 'none';
             if (mobileUserBar) {
                 mobileUserBar.style.display = 'flex';
-                document.getElementById('mobileUserEmail').textContent = currentUser.email;
+                const mobileUserEmail = document.getElementById('mobileUserEmail');
+                if (mobileUserEmail) mobileUserEmail.textContent = currentUser.email;
             }
             document.getElementById('userEmail').textContent = currentUser.email;
             if (currentProfile) {
@@ -3816,6 +3817,7 @@
 
     window.updateNotificationBadge = function() {
         const badge = document.getElementById('notificationBadge');
+        if (!badge) return;
         if (!currentUser) {
             badge.style.display = 'none';
             return;
