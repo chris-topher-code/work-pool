@@ -2066,7 +2066,12 @@
         <button id="langBtnFr" class="lang-toggle" onclick="translatePage('fr')">FN</button>
         <button id="nav-login" data-i18n="login" onclick="navigate('login')">Sign In</button>
         <button id="nav-register" data-i18n="register" onclick="navigate('register')">Sign Up</button>
-        <div class="spacer"></div>
+        <div id="userInfo" class="user-info">
+            <span id="userEmail"></span>
+            <span class="role-badge" onclick="toggleRole()" id="roleBadge">Requester</span>
+            <button onclick="navigate('profile')" class="btn btn-sm btn-outline">Profile</button>
+            <button onclick="handleSignOut()" class="btn btn-sm btn-outline">Sign Out</button>
+        </div>
     </nav>
     <div class="mobile-user-bar" id="mobileUserBar" style="display: none;">
         <span class="user-email" id="mobileUserEmail"></span>
@@ -2766,6 +2771,13 @@
         let data;
         try { data = JSON.parse(text); } catch { data = text; }
         if (!response.ok) {
+            if (response.status === 401 && (data?.msg === 'JWT expired' || data?.error?.message === 'JWT expired')) {
+                localStorage.removeItem('sb_session');
+                currentUser = null;
+                currentProfile = null;
+                showToast('Session expired, please login again', 'error');
+                updateNavForAuth();
+            }
             throw { message: data?.error?.message || data?.msg || data?.message || data || 'Request failed', status: response.status };
         }
         return { data, response };
@@ -3025,24 +3037,27 @@
         const mobileUserBar = document.getElementById('mobileUserBar');
 
         if (currentUser) {
-            userInfo.classList.add('visible');
-            navLogin.style.display = 'none';
-            navRegister.style.display = 'none';
+            if (userInfo) userInfo.classList.add('visible');
+            if (navLogin) navLogin.style.display = 'none';
+            if (navRegister) navRegister.style.display = 'none';
             if (mobileUserBar) {
                 mobileUserBar.style.display = 'flex';
                 const mobileUserEmail = document.getElementById('mobileUserEmail');
                 if (mobileUserEmail) mobileUserEmail.textContent = currentUser.email;
             }
-            document.getElementById('userEmail').textContent = currentUser.email;
+            const userEmail = document.getElementById('userEmail');
+            if (userEmail) userEmail.textContent = currentUser.email;
             if (currentProfile) {
-                document.getElementById('roleBadge').textContent = getRoleName(currentProfile.role);
-                document.getElementById('mobileRoleBadge').textContent = getRoleName(currentProfile.role);
+                const roleBadge = document.getElementById('roleBadge');
+                const mobileRoleBadge = document.getElementById('mobileRoleBadge');
+                if (roleBadge) roleBadge.textContent = getRoleName(currentProfile.role);
+                if (mobileRoleBadge) mobileRoleBadge.textContent = getRoleName(currentProfile.role);
                 if (!currentProfile.qrCodes) currentProfile.qrCodes = [];
             }
         } else {
-            userInfo.classList.remove('visible');
-            navLogin.style.display = 'block';
-            navRegister.style.display = 'block';
+            if (userInfo) userInfo.classList.remove('visible');
+            if (navLogin) navLogin.style.display = 'block';
+            if (navRegister) navRegister.style.display = 'block';
             if (mobileUserBar) mobileUserBar.style.display = 'none';
         }
         updateNavTranslations();
@@ -3050,7 +3065,7 @@
 
     window.toggleMobileNav = function() {
         const nav = document.querySelector('nav');
-        nav.classList.toggle('mobile-open');
+        if (nav) nav.classList.toggle('mobile-open');
     };
 
     window.handleSignIn = async function() {
