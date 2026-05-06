@@ -583,9 +583,27 @@
     let currentViewingUserId = null;
     let projectsTab = 'active';
 
-    window.navigate = function(page, id) {
+    // Navigation history for back button
+    let navHistory = [];
+
+    window.navigate = function(page, id, _isBack) {
         try {
             console.log('navigate called with', page, id);
+            
+            // Track navigation history (skip if navigating back, skip duplicate of current page)
+            if (!_isBack) {
+                const prevPage = sessionStorage.getItem('currentPage');
+                const prevId = sessionStorage.getItem('view_project_id') || '';
+                if (prevPage && prevPage !== page) {
+                    navHistory.push({ page: prevPage, id: prevId });
+                } else if (prevPage === page && id && id !== prevId) {
+                    navHistory.push({ page: prevPage, id: prevId });
+                }
+            }
+            
+            // Update back button visibility
+            updateBackButton();
+            
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
             const pageEl = document.getElementById('page-' + page);
@@ -616,6 +634,23 @@
             console.error('Navigate error:', e);
         }
     };
+
+    window.goBack = function() {
+        if (navHistory.length === 0) return;
+        const prev = navHistory.pop();
+        updateBackButton();
+        navigate(prev.page, prev.id || undefined, true);
+    };
+
+    function updateBackButton() {
+        const btn = document.getElementById('backBtn');
+        if (!btn) return;
+        if (navHistory.length > 0) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    }
 
     window.toggleRole = function() {
         if (!currentProfile) return;
@@ -863,7 +898,7 @@
                     <span class="budget">💰 ${escapeHtml(p.budget || '待定')}</span>
                 </div>
                 <div class="project-meta">
-                    <span>👤 ${escapeHtml(p.requester_name || '未知')}</span>
+                    <span>👤 <span style="color: var(--accent); cursor: pointer;" onclick="event.stopPropagation(); navigate('user-wall', '${p.requester_id}')">${escapeHtml(p.requester_name || '未知')}</span></span>
                     <span>📅 ${escapeHtml(p.deadline || '不限')}</span>
                 </div>
             </div>
@@ -1003,7 +1038,7 @@
                         ${comments.length === 0 ? '<p style="color: var(--text-muted); padding: 1.25rem; background: rgba(139, 92, 246, 0.08); border-radius: 12px; border-left: 3px solid var(--accent); text-align: center;">No comments yet. Be the first to comment!</p>' : comments.map(c => `
                             <div class="comment-item">
                                 <div class="header">
-                                    <span class="author">${escapeHtml(c.username)}</span>
+                                    <span class="author" style="cursor: pointer;" onclick="navigate('user-wall', '${c.user_id}')">${escapeHtml(c.username)}</span>
                                     <span class="time">${new Date(c.created_at).toLocaleString()}</span>
                                 </div>
                                 <div class="content">${escapeHtml(c.content)}</div>
@@ -1023,7 +1058,9 @@
         if (id.startsWith('demo-')) {
             const localProject = getLocalProject();
             if (localProject) {
-                renderProjectDetail(localProject, null);
+                const localProfiles = JSON.parse(localStorage.getItem('profiles') || '[]');
+                const requester = localProfiles.find(p => p.id === localProject.requester_id) || null;
+                renderProjectDetail(localProject, requester);
                 return;
             }
         }
@@ -1523,45 +1560,140 @@
 
     window.loadUserWall = function(userId) {
         const container = document.getElementById('user-wall-content');
+        container.innerHTML = '<div class="loading visible">Loading...</div>';
 
-        fetchApi('/rest/v1/profiles?select=*&id=eq.' + encodeURIComponent(userId) + '&limit=1').then(async ({ data: profiles }) => {
-            const profile = profiles?.[0];
+        const getProfile = async () => {
+            try {
+                const { data } = await fetchApi('/rest/v1/profiles?select=*&id=eq.' + encodeURIComponent(userId) + '&limit=1');
+                if (data && data.length > 0) return data[0];
+            } catch(e) {}
+            const localProfiles = JSON.parse(localStorage.getItem('profiles') || '[]');
+            return localProfiles.find(p => p.id === userId) || null;
+        };
+
+        getProfile().then(profile => {
             if (!profile) {
                 container.innerHTML = '<div class="empty-state"><h3>User Not Found</h3></div>';
                 return;
             }
 
             const wallMessages = JSON.parse(localStorage.getItem('wallMessages') || '[]').filter(m => m.to_user_id === userId);
+            const reviews = JSON.parse(localStorage.getItem('reviews') || '[]');
+            const receivedReviews = reviews.filter(r => r.target_id === userId);
+            const givenReviews = reviews.filter(r => r.reviewer_id === userId);
+            const allProjects = JSON.parse(localStorage.getItem('projects') || '[]');
+            const postedProjects = allProjects.filter(p => p.requester_id === userId);
+            const completedAsRequester = postedProjects.filter(p => p.status === 'completed');
+            const completedAsReceiver = allProjects.filter(p => (p.receiver_ids || []).includes(userId) && p.status === 'completed');
+            const avgRating = receivedReviews.length > 0 ? (receivedReviews.reduce((s, r) => s + r.rating, 0) / receivedReviews.length).toFixed(1) : 'N/A';
             const isOwnProfile = currentUser && currentUser.id === userId;
+
+            const roleLabel = profile.role === 'receiver' ? '接单者 / Receiver' : '发单者 / Requester';
+            const roleColor = profile.role === 'receiver' ? 'var(--success)' : 'var(--accent-secondary)';
+
+            const renderStars = (rating) => {
+                return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+            };
 
             container.innerHTML = `
                 <div class="card">
+                    <button class="back-btn" onclick="goBack()" style="margin-bottom: 1rem;">← 返回</button>
                     <div class="profile-header">
                         <div class="profile-avatar">${(profile.username || 'U').charAt(0).toUpperCase()}</div>
                         <h1>${escapeHtml(profile.username || 'User')}</h1>
-                        <p>${escapeHtml(profile.email || '')}</p>
+                        <p style="color: var(--text-muted);">${escapeHtml(profile.email || '')}</p>
+                        <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap;">
+                            <span class="status-badge" style="background: ${roleColor}22; color: ${roleColor};">${roleLabel}</span>
+                            <span class="status-badge" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">⭐ ${avgRating} · ${receivedReviews.length} 条评价</span>
+                        </div>
+                        <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">${postedProjects.length}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">发布项目</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">${completedAsRequester.length + completedAsReceiver.length}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">已完成</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-secondary);">${givenReviews.length}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">发出评价</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Project History -->
                 <div class="card">
-                    <h2>Message Wall / 留言墙</h2>
+                    <h2>📋 项目历史 / Project History</h2>
+                    ${postedProjects.length === 0 ? '<p style="color: var(--text-muted);">暂无项目记录</p>' : `
+                        <div class="projects-grid">
+                            ${postedProjects.map(p => `
+                                <div class="project-card" onclick="viewProject('${p.id}')">
+                                    <div class="project-card-header">
+                                        <h3>${escapeHtml(p.title)}</h3>
+                                    </div>
+                                    <p class="project-desc">${escapeHtml((p.description || '').substring(0, 80))}${(p.description || '').length > 80 ? '...' : ''}</p>
+                                    <div class="project-card-footer">
+                                        <span class="badge badge-${p.status === 'open' ? 'open' : p.status === 'in_progress' ? 'progress' : 'done'}">${p.status === 'open' ? '进行中' : p.status === 'in_progress' ? '进行中' : '已完成'}</span>
+                                        <span class="budget">💰 ${escapeHtml(p.budget || '待定')}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <!-- Reviews / Received -->
+                <div class="card">
+                    <h2>⭐ 收到的评价 / Reviews Received</h2>
+                    ${receivedReviews.length === 0 ? '<p style="color: var(--text-muted);">暂无评价</p>' : receivedReviews.map(r => `
+                        <div class="comment-item">
+                            <div class="header">
+                                <span class="author" style="cursor: pointer;" onclick="navigate('user-wall', '${r.reviewer_id}')">${escapeHtml(r.reviewer_name)}</span>
+                                <span class="time">${new Date(r.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div style="color: #eab308; margin-bottom: 0.5rem;">${renderStars(r.rating)}</div>
+                            <div class="content">${escapeHtml(r.content)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Reviews / Given -->
+                <div class="card">
+                    <h2>✍️ 发出的评价 / Reviews Given</h2>
+                    ${givenReviews.length === 0 ? '<p style="color: var(--text-muted);">暂无评价</p>' : givenReviews.map(r => `
+                        <div class="comment-item">
+                            <div class="header">
+                                <span class="author" style="cursor: pointer;" onclick="navigate('user-wall', '${r.target_id}')">→ ${escapeHtml(r.target_name)}</span>
+                                <span class="time">${new Date(r.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div style="color: #eab308; margin-bottom: 0.5rem;">${renderStars(r.rating)}</div>
+                            <div class="content">${escapeHtml(r.content)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Message Wall -->
+                <div class="card">
+                    <h2>💬 留言墙 / Message Wall</h2>
                     <div id="wall-messages-list">
-                        ${wallMessages.length === 0 ? '<p style="color: var(--text-muted);">No messages yet. Leave a message!</p>' : wallMessages.map(m => `
+                        ${wallMessages.length === 0 ? '<p style="color: var(--text-muted);">暂无留言，来留个言吧！</p>' : wallMessages.map(m => `
                             <div class="wall-message">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span style="color: var(--accent); font-weight: 600;">${escapeHtml(m.from_username)}</span>
+                                    <span style="color: var(--accent); font-weight: 600; cursor: pointer;" onclick="navigate('user-wall', '${m.from_user_id}')">${escapeHtml(m.from_username)}</span>
                                     <span style="color: var(--text-muted); font-size: 0.8rem;">${new Date(m.created_at).toLocaleString()}</span>
                                 </div>
                                 <div style="color: var(--text-primary);">${escapeHtml(m.content)}</div>
                             </div>
                         `).join('')}
                     </div>
-                    ${currentUser && !isOwnProfile ? `
+                    ${!isOwnProfile ? `
                         <form onsubmit="event.preventDefault(); addWallMessage('${userId}');" style="margin-top: 1rem;">
-                            <textarea id="wall-message-input" rows="3" placeholder="Leave a message..." required></textarea>
-                            <button type="submit" class="btn btn-sm">Post Message</button>
+                            <textarea id="wall-message-input" rows="3" placeholder="Leave a message..." class="form-control" required></textarea>
+                            <button type="submit" class="btn btn-sm" style="margin-top: 0.5rem;">Post Message</button>
                         </form>
-                    ` : currentUser && isOwnProfile ? '<p style="color: var(--text-muted); margin-top: 1rem;">This is your profile.</p>' : '<p style="color: var(--text-muted); margin-top: 1rem;">Sign in to leave a message.</p>'}
+                    ` : '<p style="color: var(--text-muted); margin-top: 1rem;">这是你的个人主页。</p>'}
                 </div>
             `;
         }).catch(e => {
@@ -1623,9 +1755,8 @@
 
     loadCurrentUser();
 
-    // Initialize demo profiles
-    const profiles = JSON.parse(localStorage.getItem('profiles') || '[]');
-    if (profiles.length === 0) {
+    // Initialize demo profiles (always overwrite for demo)
+    {
         const demoProfiles = [
             { id: 'demo-requester-1', username: '张经理', role: 'requester', email: 'zhang@example.com' },
             { id: 'demo-requester-2', username: '李设计师', role: 'requester', email: 'li@example.com' },
@@ -1752,8 +1883,52 @@
             created_at: new Date(Date.now() - 86400000 * 1).toISOString()
         }
     ];
-    if (!localStorage.getItem('projects') || JSON.parse(localStorage.getItem('projects') || '[]').length === 0) {
+    // Always overwrite projects for demo
+    {
         localStorage.setItem('projects', JSON.stringify(demoProjects));
+    }
+
+    // Seed demo wall messages (always overwrite for demo)
+    {
+        const demoWallMessages = [
+            { id: 'wm-1', from_user_id: 'demo-receiver-1', from_username: '开发者小王', to_user_id: 'demo-requester-1', content: '张经理，上次的官网项目合作非常愉快！代码质量您还满意吗？', created_at: new Date(Date.now() - 86400000 * 15).toISOString() },
+            { id: 'wm-2', from_user_id: 'demo-requester-1', from_username: '张经理', to_user_id: 'demo-receiver-1', content: '非常满意！代码规范、文档齐全，下次有项目还找你！👍', created_at: new Date(Date.now() - 86400000 * 14).toISOString() },
+            { id: 'wm-3', from_user_id: 'demo-requester-3', from_username: '王总', to_user_id: 'demo-receiver-1', content: '小王，后台管理系统开发进度如何？有什么问题随时沟通。', created_at: new Date(Date.now() - 86400000 * 3).toISOString() },
+            { id: 'wm-4', from_user_id: 'demo-receiver-1', from_username: '开发者小王', to_user_id: 'demo-requester-3', content: '王总放心，已完成70%，预计下周可以交付测试版。', created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+            { id: 'wm-5', from_user_id: 'demo-requester-4', from_username: '陈营销', to_user_id: 'demo-receiver-2', content: '小李，视频剪辑得太棒了！效果超出预期，已经发给老板看了。', created_at: new Date(Date.now() - 86400000 * 8).toISOString() },
+            { id: 'wm-6', from_user_id: 'demo-receiver-2', from_username: '剪辑师小李', to_user_id: 'demo-requester-4', content: '谢谢陈姐认可！如果需要修改随时说，免费调整三次。😊', created_at: new Date(Date.now() - 86400000 * 7).toISOString() },
+            { id: 'wm-7', from_user_id: 'demo-requester-7', from_username: '孙创意', to_user_id: 'demo-receiver-3', content: '小张，Logo初稿看了，配色方案很好，但字体能不能再现代一些？', created_at: new Date(Date.now() - 86400000 * 5).toISOString() },
+            { id: 'wm-8', from_user_id: 'demo-receiver-3', from_username: '设计师小张', to_user_id: 'demo-requester-7', content: '好的孙总，我重新调整字体风格，明天给您更新版本。', created_at: new Date(Date.now() - 86400000 * 4).toISOString() },
+            { id: 'wm-9', from_user_id: 'demo-requester-2', from_username: '李设计师', to_user_id: 'demo-receiver-3', content: '小张，看到你给孙总做的Logo了，设计水平很高！我们有个App UI项目想找你合作。', created_at: new Date(Date.now() - 86400000 * 6).toISOString() },
+            { id: 'wm-10', from_user_id: 'demo-receiver-3', from_username: '设计师小张', to_user_id: 'demo-requester-2', content: '李老师过奖了！很感兴趣，方便发一下需求文档吗？', created_at: new Date(Date.now() - 86400000 * 5).toISOString() }
+        ];
+        localStorage.setItem('wallMessages', JSON.stringify(demoWallMessages));
+    }
+
+    // Seed demo reviews/ratings (always overwrite for demo)
+    {
+        const demoReviews = [
+            { id: 'rv-1', project_id: 'demo-4', reviewer_id: 'demo-requester-4', reviewer_name: '陈营销', target_id: 'demo-receiver-2', target_name: '剪辑师小李', rating: 5, content: '剪辑技术一流，节奏把控非常好，交稿准时，沟通顺畅。强烈推荐！', created_at: new Date(Date.now() - 86400000 * 9).toISOString() },
+            { id: 'rv-2', project_id: 'demo-7', reviewer_id: 'demo-requester-7', reviewer_name: '孙创意', target_id: 'demo-receiver-3', target_name: '设计师小张', rating: 4, content: '设计水平很高，配色方案很满意。字体风格需要再调整，但整体不错。', created_at: new Date(Date.now() - 86400000 * 4).toISOString() },
+            { id: 'rv-3', project_id: 'demo-3', reviewer_id: 'demo-requester-3', reviewer_name: '王总', target_id: 'demo-receiver-1', target_name: '开发者小王', rating: 5, content: '代码质量非常高，架构设计合理，文档详细。合作体验极佳，五星好评！', created_at: new Date(Date.now() - 86400000 * 1).toISOString() },
+            { id: 'rv-4', project_id: 'demo-4', reviewer_id: 'demo-receiver-2', reviewer_name: '剪辑师小李', target_id: 'demo-requester-4', target_name: '陈营销', rating: 5, content: '需求描述清晰，沟通高效，付款及时。非常好的合作方！', created_at: new Date(Date.now() - 86400000 * 8).toISOString() },
+            { id: 'rv-5', project_id: 'demo-7', reviewer_id: 'demo-receiver-3', reviewer_name: '设计师小张', target_id: 'demo-requester-7', target_name: '孙创意', rating: 4, content: '需求有想法，反馈及时，审美在线。虽然修改意见多但都是有建设性的。', created_at: new Date(Date.now() - 86400000 * 3).toISOString() },
+            { id: 'rv-6', project_id: 'demo-3', reviewer_id: 'demo-receiver-1', reviewer_name: '开发者小王', target_id: 'demo-requester-3', target_name: '王总', rating: 5, content: '需求明确，沟通顺畅，付款爽快。非常愉快的合作经历！', created_at: new Date(Date.now() - 86400000 * 1).toISOString() }
+        ];
+        localStorage.setItem('reviews', JSON.stringify(demoReviews));
+    }
+
+    // Seed demo comments (always overwrite for demo)
+    {
+        const demoComments = [
+            { id: 'c-1', project_id: 'demo-1', user_id: 'demo-receiver-1', username: '开发者小王', content: '张经理您好，我有5年React开发经验，之前做过类似的企业官网项目。可以私信详聊吗？', created_at: new Date(Date.now() - 86400000 * 1.5).toISOString() },
+            { id: 'c-2', project_id: 'demo-1', user_id: 'demo-receiver-3', username: '设计师小张', content: '如果需要UI设计配合，我也可以参与，我可以负责前端设计部分。', created_at: new Date(Date.now() - 86400000 * 1.2).toISOString() },
+            { id: 'c-3', project_id: 'demo-2', user_id: 'demo-receiver-3', username: '设计师小张', content: '李老师，这个健身App我很感兴趣！我之前做过类似项目的UI设计，可以看看我的作品集。', created_at: new Date(Date.now() - 86400000 * 0.8).toISOString() },
+            { id: 'c-4', project_id: 'demo-5', user_id: 'demo-receiver-1', username: '开发者小王', content: '刘总，Python爬虫我做过不少，反爬机制处理有经验。预算方面可以再商量。', created_at: new Date(Date.now() - 86400000 * 2.5).toISOString() },
+            { id: 'c-5', project_id: 'demo-6', user_id: 'demo-receiver-1', username: '开发者小王', content: '赵老板好，uni-app小程序商城我之前做过两个，可以提供案例参考。这个预算能接受的话我可以接。', created_at: new Date(Date.now() - 86400000 * 3.5).toISOString() },
+            { id: 'c-6', project_id: 'demo-8', user_id: 'demo-receiver-2', username: '剪辑师小李', content: '虽然我主要做视频剪辑，但SEO方面也有些了解。如果需要视频内容配合SEO策略，可以聊聊。', created_at: new Date(Date.now() - 86400000 * 0.5).toISOString() }
+        ];
+        localStorage.setItem('comments', JSON.stringify(demoComments));
     }
 
     navigate('home');
